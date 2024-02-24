@@ -1,0 +1,25 @@
+package com.jey;
+
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+public class TestController {
+	
+	@GetMapping("/")
+	public String test() {
+		return "Sample test";
+	}
+	
+	@GetMapping("/test")
+	public String test1() {
+		return "Sample test /test";
+	}
+	
+	@GetMapping("/vaibhavi")
+	public String test2() {
+		return "vaibhavi naughty girl";
+	}
+	
+}

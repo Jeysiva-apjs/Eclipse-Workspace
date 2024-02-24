@@ -1,0 +1,12 @@
+package synchronized_;
+
+public class Test {
+	
+	public synchronized static void print() {
+		for(int i=0; i<10; i++) {
+			System.out.println(Thread.currentThread().getName() + " " + i);
+		}
+		
+	}
+
+}

@@ -1,0 +1,105 @@
+package com.mockitotutorial.happyhotel.booking;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+import java.time.LocalDate;
+import java.util.*;
+
+import javax.management.ConstructorParameters;
+
+import org.junit.jupiter.api.*;
+
+class Test01FirstMocks {
+	
+	private BookingService bookingService;
+	private PaymentService paymentServiceMock;
+	private RoomService roomServiceMock;
+	private BookingDAO bookingDAOMock;
+	private MailSender mailSenderMock;
+	
+	@BeforeEach
+	void setup() {
+		
+		this.paymentServiceMock = mock(PaymentService.class);
+		this.roomServiceMock = mock(RoomService.class);
+		this.bookingDAOMock = mock(BookingDAO.class);
+		this.mailSenderMock = mock(MailSender.class);
+		
+		this.bookingService = new BookingService(paymentServiceMock, roomServiceMock, bookingDAOMock, mailSenderMock);
+		
+	}
+
+	@Test
+	void should_CalculateCorrectPrice_When_CorrectInput() {
+		//given
+		BookingRequest bookingRequest = new BookingRequest("1", LocalDate.of(2024, 1, 1), LocalDate.of(2024, 1, 4), 2, false);
+		double expected = 3 * 2 * 50.0;
+		
+		//when
+		double actual = bookingService.calculatePrice(bookingRequest);
+		
+		//then
+		assertEquals(expected, actual);	
+	}
+	
+	@Test
+	void should_CountAvailablePlaces_When_NoRooms() {
+		//given
+		int expected = 0;
+		
+		//when
+		int actual = bookingService.getAvailablePlaceCount();
+		
+		//then
+		assertEquals(actual, expected);
+	}
+
+	@Test
+	void should_CountAvailablePlaces_When_RoomsNotEmpty() {
+		//given
+		List<Room> rooms = List.of(new Room("1", 2));
+		when(this.roomServiceMock.getAvailableRooms()).thenReturn(rooms);
+		int expected = 2;
+		
+		//when
+		int actual = this.bookingService.getAvailablePlaceCount();
+		
+		
+		//then
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	void should_CountAvailablePlaces_When_RoomsNotEmpty2() {
+		//given
+		List<Room> rooms = List.of(new Room("1", 2), new Room("2", 5));
+		when(this.roomServiceMock.getAvailableRooms()).thenReturn(rooms);
+		int expected = 7;
+		
+		//when
+		int actual = this.bookingService.getAvailablePlaceCount();
+		
+		
+		//then
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	void should_CountAvailablePlaces_When_MultipleCalls() {
+		//given
+		when(this.roomServiceMock.getAvailableRooms()).thenReturn(Collections.singletonList(new Room("1", 2)));
+		when(this.roomServiceMock.getAvailableRooms()).thenReturn(Collections.emptyList()));
+		int expected = 2;
+		
+		//when
+		int actual = this.bookingService.getAvailablePlaceCount();
+		
+		
+		//then
+		assertEquals(expected, actual);
+	}
+	
+	
+
+}

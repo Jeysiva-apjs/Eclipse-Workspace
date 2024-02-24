@@ -1,0 +1,14 @@
+package synchronized_;
+
+public class Main {
+
+	public static void main(String[] args) {
+		School school = new School("BVB", "Erode");
+		SchoolThread schoolThread = new SchoolThread(school);
+		Thread t1 = new Thread(schoolThread, "t1");
+		t1.start();
+		
+
+	}
+
+}

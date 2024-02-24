@@ -1,0 +1,17 @@
+package synchronized_;
+
+public class SchoolThread implements Runnable{
+	
+	private School school;
+	
+	void SchoolThread(School school) {
+		this.school = school;	
+	}
+
+	@Override
+	public void run() {
+		System.out.println(Thread.currentThread().getName() + " " + school.getName());
+		
+	}
+
+}

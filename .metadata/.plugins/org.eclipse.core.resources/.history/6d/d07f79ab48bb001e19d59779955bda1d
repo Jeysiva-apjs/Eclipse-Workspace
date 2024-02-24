@@ -1,0 +1,14 @@
+package com.mockitotutorial.happyhotel.booking;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+import org.junit.jupiter.api.Test;
+
+class Test01FirstMocks {
+
+	@Test
+	void test() {
+		fail("Not yet implemented");
+	}
+
+}

@@ -1,0 +1,220 @@
+package com.mockitotutorial.happyhotel.booking;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+import java.time.LocalDate;
+import java.util.*;
+
+import javax.management.ConstructorParameters;
+
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.function.Executable;
+import org.mockito.Mock;
+
+class Test01FirstMocks {
+	
+	
+	private BookingService bookingService;
+	private PaymentService paymentServiceMock;
+	private RoomService roomServiceMock;
+	private BookingDAO bookingDAOMock;
+	private MailSender mailSenderMock;
+	
+	@BeforeEach
+	void setup() {
+		
+		this.paymentServiceMock = mock(PaymentService.class);
+		this.roomServiceMock = mock(RoomService.class);
+		this.bookingDAOMock = spy(BookingDAO.class);
+		this.mailSenderMock = mock(MailSender.class);
+		
+		this.bookingService = new BookingService(paymentServiceMock, roomServiceMock, bookingDAOMock, mailSenderMock);
+		
+	}
+
+	@Test
+	void should_CalculateCorrectPrice_When_CorrectInput() {
+		//given
+		BookingRequest bookingRequest = new BookingRequest("1", LocalDate.of(2024, 1, 1), LocalDate.of(2024, 1, 4), 2, false);
+		double expected = 3 * 2 * 50.0;
+		
+		//when
+		double actual = bookingService.calculatePrice(bookingRequest);
+		
+		//then
+		assertEquals(expected, actual);	
+	}
+	
+	@Test
+	void should_CountAvailablePlaces_When_NoRooms() {
+		//given
+		int expected = 0;
+		
+		//when
+		int actual = bookingService.getAvailablePlaceCount();
+		
+		//then
+		assertEquals(actual, expected);
+	}
+
+	@Test
+	void should_CountAvailablePlaces_When_RoomsNotEmpty() {
+		//given
+		List<Room> rooms = List.of(new Room("1", 2));
+		when(this.roomServiceMock.getAvailableRooms()).thenReturn(rooms);
+		int expected = 2;
+		
+		//when
+		int actual = this.bookingService.getAvailablePlaceCount();
+		
+		
+		//then
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	void should_CountAvailablePlaces_When_RoomsNotEmpty2() {
+		//given
+		List<Room> rooms = List.of(new Room("1", 2), new Room("2", 5));
+		when(this.roomServiceMock.getAvailableRooms()).thenReturn(rooms);
+		int expected = 7;
+		
+		//when
+		int actual = this.bookingService.getAvailablePlaceCount();
+		
+		//then
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	void should_CountAvailablePlaces_When_MultipleCalls() {
+		//given
+		when(this.roomServiceMock.getAvailableRooms())
+		.thenReturn(Collections.singletonList(new Room("1", 2)))
+		.thenReturn(Collections.emptyList());
+		
+		int expectedFirst = 2;
+		int expectedSecond = 0;
+		
+		//when
+		int actualFirst = this.bookingService.getAvailablePlaceCount();
+		int actualSecond = this.bookingService.getAvailablePlaceCount();
+		
+		
+		//then
+		assertAll(() -> assertEquals(expectedFirst, actualFirst),
+				() -> assertEquals(expectedSecond, actualSecond));
+	}
+	
+	@Test
+	void should_ThrowException_When_NoRoomAvailable() {
+		// given
+		BookingRequest bookingRequest = new BookingRequest("1", LocalDate.of(2024, 1, 1), LocalDate.of(2024, 1, 4), 2, false);
+		when(this.roomServiceMock.findAvailableRoomId(bookingRequest))
+		.thenThrow(BusinessException.class);
+		
+		// when
+		Executable executable = () -> this.roomServiceMock.findAvailableRoomId(bookingRequest);
+		
+		// then
+		assertThrows(BusinessException.class, executable);
+	}
+	
+	@Test
+	void should_ThrowException_When_PriceTooHigh() {
+		// given 
+		BookingRequest bookingRequest = new BookingRequest("1", LocalDate.of(2024, 1, 1), LocalDate.of(2024, 1, 4), 2, false);
+
+		when(this.paymentServiceMock.pay(any(), anyDouble())).thenThrow(BusinessException.class);
+		
+		// when
+		Executable executable = () -> this.paymentServiceMock.pay(bookingRequest, 455.0);
+		
+		// then
+		assertThrows(BusinessException.class, executable);
+		
+	}
+	
+	@Test
+	void should_InvokePayment_When_Prepaid() {
+		// given 
+		BookingRequest bookingRequest = new BookingRequest("1", LocalDate.of(2024, 01, 01), LocalDate.of(2024, 01, 05), 2, true);
+		
+		// when
+		bookingService.makeBooking(bookingRequest);
+		
+		// then 
+		verify(paymentServiceMock, times(1)).pay(bookingRequest, 400.0);
+		verifyNoMoreInteractions(paymentServiceMock);
+		
+	}
+	
+	@Test
+	void should_NotInvokePayment_When_NotPrepaid() {
+		// given 
+		BookingRequest bookingRequest = new BookingRequest
+				("1", LocalDate.of(2024, 01, 01), LocalDate.of(2024, 01, 05), 2, false);
+		
+		// when
+		bookingService.makeBooking(bookingRequest);
+		
+		// then 
+		verify(paymentServiceMock, never()).pay(any(), anyDouble());
+		
+	}
+	
+	@Test
+	void should_MakeBooking_When_InputOk() {
+		// given 
+		BookingRequest bookingRequest = new BookingRequest
+				("1", LocalDate.of(2024, 01, 01), LocalDate.of(2024, 01, 05), 2, false);
+		
+		// when
+		String bookingId = bookingService.makeBooking(bookingRequest);
+		
+		// then 
+		verify(bookingDAOMock).save(bookingRequest);
+		System.out.println("Booking ID: " + bookingId);
+		
+	}
+	
+	@Test
+	void should_CancelBooking_When_InputOk() {
+		// given 
+		BookingRequest bookingRequest = new BookingRequest
+				("1", LocalDate.of(2024, 01, 01), LocalDate.of(2024, 01, 05), 2, false);
+		bookingRequest.setRoomId("1");
+		String bookingId = "1";
+		
+		doReturn(bookingRequest).when(bookingDAOMock).get(bookingId);
+		
+		// when
+		bookingService.cancelBooking(bookingId);
+		
+		// then 
+		verify(bookingDAOMock, times(1)).get(bookingId);
+		verify(bookingDAOMock, times(1)).delete(bookingId);
+		
+	}
+	
+	@Test
+	void should_ThrowException() {
+		BookingRequest bookingRequest = new BookingRequest
+				("1", LocalDate.of(2024, 01, 01), LocalDate.of(2024, 01, 05), 2, false);
+		doThrow(BusinessException.class).when(this.mailSenderMock.sendBookingConfirmation(any()));
+		
+		doReturn(bookingRequest).when(bookingDAOMock).get(bookingId);
+		
+		// when
+		bookingService.cancelBooking(bookingId);
+		
+		// then 
+		verify(bookingDAOMock, times(1)).get(bookingId);
+		verify(bookingDAOMock, times(1)).delete(bookingId);
+		
+		
+	}
+	
+
+}

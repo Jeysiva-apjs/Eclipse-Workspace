@@ -1,0 +1,23 @@
+package synchronized_;
+
+import java.util.Iterator;
+
+public class SchoolThread implements Runnable{
+	
+	private School school;
+	
+	SchoolThread(School school) {
+		this.school = school;	
+	}
+	
+	public void print() {
+		for(int i=0; i<10; i++) {
+			System.out.println(Thread.currentThread().getName() + " " + school.getName() + " " + i);
+		}	
+	}
+
+	@Override
+	public void run() {
+	}
+
+}

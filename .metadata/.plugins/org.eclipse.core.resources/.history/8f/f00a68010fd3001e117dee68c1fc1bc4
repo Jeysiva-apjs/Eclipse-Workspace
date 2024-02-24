@@ -1,0 +1,16 @@
+package com.jey;
+
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+public class TestController {
+
+	
+	@GetMapping("post/{name}")
+	public String test2(@PathVariable String name) {
+		return name + " is a naughty girl";
+	}
+}

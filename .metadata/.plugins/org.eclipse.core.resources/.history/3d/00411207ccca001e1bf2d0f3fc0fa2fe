@@ -1,0 +1,79 @@
+package round_2;
+
+public class Set1 {
+	
+	public static void printPattern(int n) {
+		int odd = 1;
+		int even = 2;
+		
+		for(int i=1; i<=n; i++) {
+			int spaces = n-i;
+			for(int j=1; j<=n; j++) {
+				if(j <= spaces) {
+					System.out.print("   ");
+					continue;
+				}
+				if(i % 2 == 1) {
+					if(odd < 10) System.out.print(odd + "  ");
+					else System.out.print(odd + " ");
+					odd += 2;
+				}else {
+					if(even < 10) System.out.print(even + "  ");
+					else System.out.print(even + " ");
+					even += 2;	
+				}
+			}
+			System.out.println();
+		}
+	}
+	
+	public static void findFrequency(int[] arr) {
+		int count = 0;
+		int num = 0;
+		for(int i=0; i<arr.length; i++) {
+			if(i == 0) {
+				count = 1;
+				continue;
+			}
+			if(arr[i-1] == arr[i]) {
+				count += 1;
+			}else {
+				num = arr[i-1];
+				System.out.print(num + "->" + count + ", ");
+				count = 1;
+			}
+		}
+		System.out.print(arr[arr.length-1] + "->" + count);
+		
+	}
+	
+	public static void justifyPage(String str, int len) {
+		int count = 0;
+		String res = "";
+		for(int i=0; i< str.length(); i++) {
+			if(str.charAt(i) == ' ') {
+				count += 1;
+			}	
+		}
+		int filler = (len-str.length()) / count;
+		for(int i=0; i< str.length(); i++) {
+			if(str.charAt(i) == ' ') {
+				int j = 0;
+				while(j <= filler) {
+					res += "*";
+					j += 1;
+				}
+			}else {
+				res += str.charAt(i);
+			}
+		}
+		System.out.println(res);
+	}
+
+	public static void main(String[] args) {
+		//printPattern(10);
+		//findFrequency(new int[] {1, 1, 2, 2, 2, 3, 3, 3, 4, 5, 5});
+		justifyPage("I am good today", 23);
+	}
+
+}

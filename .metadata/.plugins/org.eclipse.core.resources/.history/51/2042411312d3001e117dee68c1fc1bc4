@@ -1,0 +1,13 @@
+package com.jey;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class CustomerData {
+	
+	List<Customer> customers = new ArrayList<>();
+	
+	public void addCustomer(Customer cus) {
+        customers.add(cus);
+    }
+}
